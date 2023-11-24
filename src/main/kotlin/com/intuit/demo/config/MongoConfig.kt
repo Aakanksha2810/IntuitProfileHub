@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory
 @Configuration
 class MongoConfig {
 
+    //singleton
     @Bean
     fun mongoClient() = MongoClients.create()
 
