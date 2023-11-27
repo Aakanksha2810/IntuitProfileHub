@@ -1,232 +1,168 @@
-//import com.intuit.demo.exception.BusinessProfileValidationException
-//import com.intuit.demo.exception.HttpResponseException
-//import com.intuit.demo.exception.NotFoundException
-//import com.intuit.demo.model.schema.*
-//import com.intuit.demo.repository.BusinessProfileRepository
-//import com.intuit.demo.repository.UserSubscriptionRepository
-//import com.intuit.demo.service.BusinessProfileService
-//import com.intuit.demo.service.ValidationClientHystrix
-//import com.mongodb.MongoException
-//import io.mockk.*
-//import io.mockk.junit5.MockKExtension
-//import kotlinx.coroutines.ExperimentalCoroutinesApi
-//import kotlinx.coroutines.test.runBlockingTest
-//import org.junit.jupiter.api.Assertions.assertEquals
-//import org.junit.jupiter.api.Test
-//import org.junit.jupiter.api.assertThrows
-//import org.junit.jupiter.api.extension.ExtendWith
-//import org.springframework.data.mongodb.core.FindAndModifyOptions
-//import org.springframework.data.mongodb.core.MongoTemplate
-//import org.springframework.data.mongodb.core.insert
-//import org.springframework.data.mongodb.core.query.Criteria
-//import org.springframework.data.mongodb.core.query.Query
-//import org.springframework.data.mongodb.core.query.Update
-//import java.util.*
-//
-//@ExtendWith(MockKExtension::class)
-//class BusinessProfileServiceTest {
-//
-//    private val mongoTemplate = mockk<MongoTemplate>()
-//    private val businessProfileRepository = mockk<BusinessProfileRepository>()
-//    private val userSubscriptionRepository = mockk<UserSubscriptionRepository>()
-//    private val validationClientHystrix = mockk<ValidationClientHystrix>()
-//
-//    private val businessProfileService = BusinessProfileService(
-//        mongoTemplate,
-//        businessProfileRepository,
-//        userSubscriptionRepository,
-//        validationClientHystrix
-//    )
-//
-//    private val businessAddress = BusinessAddress("123 Main St", "Apt 456", "Cityville", "CA", "12345", "USA")
-//    private val taxIdentifiers = TaxIdentifiers("ABCDE1234F", "123456789")
-//
-//    private val request = BusinessProfile(
-//        email = "test@example.com",
-//        companyName = "ABC Company",
-//        legalName = "ABC Legal",
-//        businessAddress = businessAddress,
-//        legalAddress = "789 Legal St, Legal City, Legal State, 67890, USA",
-//        taxIdentifiers = taxIdentifiers,
-//        website = "http://www.example.com"
-//    )
-//
-//    @Test
-//    fun `test updateBusinessProfile`() {
-//        // Mock the findAndModify result
-//        val updatedBusinessProfile =  BusinessProfile(
-//            email = "test@example.com",
-//            companyName = "ABC Company",
-//            legalName = "ABC Legal",
-//            businessAddress = businessAddress,
-//            legalAddress = "789 Legal St, Legal City, Legal State, 67890, USA",
-//            taxIdentifiers = taxIdentifiers,
-//            website = "http://www.example.com"
-//        )
-//
-//        every {
-//            mongoTemplate.findAndModify(
-//                any(),
-//                any(),
-//                any(),
-//                BusinessProfile::class.java
-//            )
-//        } returns updatedBusinessProfile
-//
-//        // Use reflection to invoke the private method
-//        val privateMethod = BusinessProfileService::class.java
-//            .getDeclaredMethod("updateBusinessProfile", BusinessProfile::class.java)
-//        privateMethod.isAccessible = true
-//        val result = privateMethod.invoke(businessProfileService, request) as BusinessProfile?
-//
-//        // Verify interactions
-//        verify {
-//            mongoTemplate.findAndModify(
-//                Query.query(Criteria.where("email").`is`(request.email)),
-//                any<Update>(),
-//                any(),
-//                BusinessProfile::class.java
-//            )
-//        }
-//
-//        // Assert the result
-//        // You can assert the result based on your business logic
-//        // For example, if the update is successful, the result should not be null
-//        assert(result != null)
-//        assertEquals(result?.taxIdentifiers?.pan, "ABCDE1234F")
-//        assertEquals(result?.taxIdentifiers?.ein, "123456789")
-//    }
-//
-//    @Test
-//    @ExperimentalCoroutinesApi
-//    fun `test validateBusinessProfile with successful validation and create`() = runBlockingTest {
-//        val userSubscription = UserSubscription("trp@gmail.com", listOf(Subscriptions("","")))
-//
-//        every { userSubscriptionRepository.findById(request.email) } returns Optional.of(userSubscription)
-//        every { validationClientHystrix.validate(request) } returns true
-//        every { businessProfileRepository.findById(request.email).isPresent } returns false
-//        every { mongoTemplate.insert(request) } returns request
-//
-//        businessProfileService.validateBusinessProfile(request)
-//
-//        verify(exactly = 1) { userSubscriptionRepository.findById(request.email) }
-//        coVerify(exactly = 1) { validationClientHystrix.validate(request) }
-//        verify(exactly = 1) { businessProfileRepository.findById(request.email) }
-//    }
-//
-//    @Test
-//    @ExperimentalCoroutinesApi
-//    fun `test validateBusinessProfile with successful validation and update`() = runBlockingTest {
-//        val userSubscription = UserSubscription("trp@gmail.com", listOf(Subscriptions("","")))
-//
-//        every { userSubscriptionRepository.findById(request.email) } returns Optional.of(userSubscription)
-//        every { validationClientHystrix.validate(request) } returns true
-//        every { businessProfileRepository.findById(request.email).isPresent } returns true
-//        every {
-//            mongoTemplate.findAndModify(
-//                any(),
-//                any(),
-//                any(),
-//                BusinessProfile::class.java
-//            )
-//        } returns request
-//
-//
-//        businessProfileService.validateBusinessProfile(request)
-//
-//        verify(exactly = 1) { userSubscriptionRepository.findById(request.email) }
-//        coVerify(exactly = 1) { validationClientHystrix.validate(request) }
-//        verify(exactly = 1) { businessProfileRepository.findById(request.email) }
-//    }
-//
-//    @Test
-//    @ExperimentalCoroutinesApi
-//    fun `test validateBusinessProfile with mongo exception and update`() = runBlockingTest {
-//        val userSubscription = UserSubscription("trp@gmail.com", listOf(Subscriptions("","")))
-//        val mongoException = mockk<MongoException>()
-//        every { userSubscriptionRepository.findById(request.email) } returns Optional.of(userSubscription)
-//        every { validationClientHystrix.validate(request) } returns true
-//        every { businessProfileRepository.findById(request.email).isPresent } returns true
-//        every {
-//            mongoTemplate.findAndModify(
-//                any(),
-//                any(),
-//                any(),
-//                BusinessProfile::class.java
-//            )
-//        } throws mongoException
-//
-//
-//        assertThrows<HttpResponseException> {
-//            businessProfileService.validateBusinessProfile(request)
-//        }
-//
-//        verify(exactly = 1) { userSubscriptionRepository.findById(request.email) }
-//        coVerify(exactly = 1) { validationClientHystrix.validate(request) }
-//        verify(exactly = 1) { businessProfileRepository.findById(request.email) }
-//    }
-//
-//    @Test
-//    @ExperimentalCoroutinesApi
-//    fun `test validateBusinessProfile with false validation`() = runBlockingTest {
-//        val userSubscription = UserSubscription("", listOf(Subscriptions("","")))
-//
-//        every { userSubscriptionRepository.findById(request.email) } returns Optional.of(userSubscription)
-//        every { validationClientHystrix.validate(request) } returns false
-//        every { businessProfileRepository.findById(request.email).isPresent } returns false
-//        every { mongoTemplate.insert(request) } returns request
-//
-//        assertThrows<BusinessProfileValidationException> {
-//            businessProfileService.validateBusinessProfile(request)
-//        }
-//
-//        verify(exactly = 1) { userSubscriptionRepository.findById(request.email) }
-//        coVerify(exactly = 1) { validationClientHystrix.validate(request) }
-//    }
-//
-//    @Test
-//    @ExperimentalCoroutinesApi
-//    fun `test validateBusinessProfile with mongo exception for createBusinessProfile`() = runBlockingTest {
-//        val userSubscription = UserSubscription("", listOf(Subscriptions("","")))
-//        val mongoException = mockk<MongoException>()
-//        every { userSubscriptionRepository.findById(request.email) } returns Optional.of(userSubscription)
-//        every { validationClientHystrix.validate(request) } returns true
-//        every { businessProfileRepository.findById(request.email).isPresent } returns false
-//        every { mongoTemplate.insert(request) } throws  mongoException
-//
-//        assertThrows<HttpResponseException> {
-//            businessProfileService.validateBusinessProfile(request)
-//        }
-//
-//        verify(exactly = 1) { userSubscriptionRepository.findById(request.email) }
-//        coVerify(exactly = 1) { validationClientHystrix.validate(request) }
-//        verify(exactly = 1) { businessProfileRepository.findById(request.email) }
-//    }
-//
-//    @Test
-//    @ExperimentalCoroutinesApi
-//    fun `test validateBusinessProfile with mongo exception for findById`() = runBlockingTest {
-//        val userSubscription = UserSubscription("", listOf(Subscriptions("","")))
-//        val mongoException = mockk<MongoException>()
-//        every { userSubscriptionRepository.findById(request.email) } returns Optional.of(userSubscription)
-//        every { validationClientHystrix.validate(request) } returns true
-//        every { businessProfileRepository.findById(request.email) } throws mongoException
-//
-//        assertThrows<HttpResponseException> {
-//            businessProfileService.validateBusinessProfile(request)
-//        }
-//
-//        verify(exactly = 1) { userSubscriptionRepository.findById(request.email) }
-//        coVerify(exactly = 1) { validationClientHystrix.validate(request) }
-//    }
-//
-//    @Test
-//    @ExperimentalCoroutinesApi
-//    fun `test validateBusinessProfile with NotFound exception`() = runBlockingTest {
-//        every { userSubscriptionRepository.findById(request.email) } returns Optional.empty()
-//        assertThrows<NotFoundException> {
-//            businessProfileService.validateBusinessProfile(request)
-//        }
-//        verify(exactly = 1) { userSubscriptionRepository.findById(request.email) }
-//    }
-//}
+package com.intuit.demo.service
+
+import com.intuit.demo.exception.DatabaseException
+import com.intuit.demo.exception.NotFoundException
+import com.intuit.demo.exception.ValidationException
+import com.intuit.demo.model.schema.BusinessProfile
+import com.intuit.demo.model.schema.TaxIdentifiers
+import com.intuit.demo.model.schema.BusinessAddress
+import com.intuit.demo.model.schema.Subscriptions
+import com.intuit.demo.model.schema.UserSubscription
+import com.intuit.demo.repository.BusinessProfileRepository
+import com.intuit.demo.repository.BusinessProfileTemplateRepository
+import com.intuit.demo.repository.UserSubscriptionRepository
+import com.mongodb.MongoException
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
+import java.util.*
+
+@ExtendWith(MockKExtension::class)
+class BusinessProfileServiceTest {
+    private lateinit var businessProfileService: BusinessProfileService
+
+    private val businessProfileTemplateRepository: BusinessProfileTemplateRepository = mockk()
+    private val businessProfileRepository: BusinessProfileRepository = mockk()
+    private val userSubscriptionRepository: UserSubscriptionRepository = mockk()
+    private val validationClientHystrix: ValidationClientHystrix = mockk()
+
+    @BeforeEach
+    fun setUp() {
+        businessProfileService = BusinessProfileService(
+            businessProfileTemplateRepository,
+            businessProfileRepository,
+            userSubscriptionRepository,
+            validationClientHystrix
+        )
+    }
+
+    @AfterEach
+    fun tearDown() {
+        clearAllMocks()
+    }
+
+    private val businessAddress = BusinessAddress("123 Main St", "Apt 456", "Cityville", "CA", "12345", "USA")
+    private val taxIdentifiers = TaxIdentifiers("ABCDE1234F", "123456789")
+
+    private val request = BusinessProfile(
+        email = "test@example.com",
+        companyName = "ABC Company",
+        legalName = "ABC Legal",
+        businessAddress = businessAddress,
+        legalAddress = "789 Legal St, Legal City, Legal State, 67890, USA",
+        taxIdentifiers = taxIdentifiers,
+        website = "http://www.example.com"
+    )
+
+    private val userSubscription = UserSubscription("trp@gmail.com", listOf(Subscriptions("","")))
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `validateBusinessProfile should create a new profile when validation is successful and profile not found`() =
+        runBlockingTest {
+        // Arrange
+        every { userSubscriptionRepository.findById(request.email) } returns Optional.of(userSubscription)
+        every { validationClientHystrix.validate(request) } returns true
+        every { businessProfileRepository.findById(request.email) } returns Optional.empty()
+        every { businessProfileTemplateRepository.createBusinessProfile(request) } returns request
+
+        // Act
+        val result = businessProfileService.validateBusinessProfile(request)
+
+        // Assert
+        assert(result == request)
+        // Add more assertions based on your specific requirements
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `validateBusinessProfile should update profile when validation is successful and profile found`() =
+        runBlockingTest {
+        every { userSubscriptionRepository.findById(request.email) } returns Optional.of(userSubscription)
+        every { validationClientHystrix.validate(request) } returns true
+        every { businessProfileRepository.findById(request.email) } returns Optional.of(request)
+        every { businessProfileTemplateRepository.updateBusinessProfile(request) } returns request
+
+        // Act
+        val result = businessProfileService.validateBusinessProfile(request)
+
+        // Assert
+        assert(result == request)
+        // Add more assertions based on your specific requirements
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `validateBusinessProfile should throw ValidationException when validation fails`() = runBlockingTest {
+        // Arrange
+        every { userSubscriptionRepository.findById(request.email) } returns Optional.of(userSubscription)
+        every { validationClientHystrix.validate(request) } returns false
+
+        // Act and Assert
+        assertThrows<ValidationException> {
+            businessProfileService.validateBusinessProfile(request)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `validateBusinessProfile should throw NotFoundException when user subscriptions not found`() = runBlockingTest {
+        // Arrange
+        every { userSubscriptionRepository.findById(request.email) } returns Optional.empty()
+
+        // Act and Assert
+        assertThrows<NotFoundException> {
+            businessProfileService.validateBusinessProfile(request)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `validateBusinessProfile should throw ValidationException when validation returns false`() = runBlockingTest {
+        // Arrange
+        every { userSubscriptionRepository.findById(request.email) } returns Optional.of(userSubscription)
+        every { validationClientHystrix.validate(request) } returns false
+
+        // Act and Assert
+        assertThrows<ValidationException> {
+            businessProfileService.validateBusinessProfile(request)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `findById should throw DatabaseException when a MongoException occurs`() = runBlockingTest {
+        // Arrange
+        every { userSubscriptionRepository.findById(request.email) } returns Optional.of(userSubscription)
+        every { validationClientHystrix.validate(request) } returns true
+        every { businessProfileRepository.findById(request.email) } throws MongoException("Simulated MongoDB exception")
+
+        // Act and Assert
+        assertThrows<DatabaseException> {
+            businessProfileService.validateBusinessProfile(request)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `validateBusinessProfile should throw Exception when an unexpected exception occurs`() =
+        runBlockingTest {
+        // Arrange
+        every { userSubscriptionRepository.findById(request.email) } throws
+                RuntimeException("Simulated unexpected exception")
+
+        // Act and Assert
+        assertThrows<Exception> {
+            businessProfileService.validateBusinessProfile(request)
+        }
+    }
+
+}

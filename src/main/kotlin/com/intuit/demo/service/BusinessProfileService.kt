@@ -1,6 +1,9 @@
 package com.intuit.demo.service
 
-import com.intuit.demo.exception.*
+import com.intuit.demo.exception.DatabaseException
+import com.intuit.demo.exception.BusinessProfileValidationException
+import com.intuit.demo.exception.NotFoundException
+import com.intuit.demo.exception.ValidationException
 import com.intuit.demo.model.schema.BusinessProfile
 import com.intuit.demo.repository.BusinessProfileRepository
 import com.intuit.demo.repository.BusinessProfileTemplateRepository
@@ -12,7 +15,7 @@ import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.util.*
+import java.util.Optional
 
 /**
  * Class to validate the request & Adds the business profile in database
@@ -48,26 +51,30 @@ class BusinessProfileService @Autowired constructor(
                 .awaitAll()
                 .all { it }
 
-            if (allRequestsSuccessful && findById(request).isPresent) {
-                val updatedProfile = businessProfileTemplateRepository.updateBusinessProfile(request)
-                log.info("Business profile updated successfully")
-                updatedProfile
-            } else if (allRequestsSuccessful) {
-                val createdProfile = businessProfileTemplateRepository.createBusinessProfile(request)
-                log.info("Business profile created successfully")
-                createdProfile
-            } else {
-                /**
-                 * Handle error message to the client
-                 */
-                throw ValidationException("Validation failed for the business profile")
+            when {
+                allRequestsSuccessful && findById(request).isPresent -> {
+                    val updatedProfile = businessProfileTemplateRepository.updateBusinessProfile(request)
+                    log.info("Business profile updated successfully")
+                    updatedProfile
+                }
+                allRequestsSuccessful -> {
+                    val createdProfile = businessProfileTemplateRepository.createBusinessProfile(request)
+                    log.info("Business profile created successfully")
+                    createdProfile
+                }
+                else -> {
+                    /**
+                     * Handle error message to the client
+                     */
+                    throw ValidationException("Validation failed for the business profile")
+                }
             }
-        }catch (e: BusinessProfileValidationException) {
+        } catch (e: BusinessProfileValidationException) {
             /**
              * Rethrow custom exceptions
              */
             throw e
-        }  catch (e: Exception) {
+        } catch (e: Exception) {
             /**
              * Handle other exceptions
              */

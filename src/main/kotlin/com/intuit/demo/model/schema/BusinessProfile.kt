@@ -1,13 +1,16 @@
 package com.intuit.demo.model.schema
 
 import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "business_profile")
 data class BusinessProfile(
         @Id
         val email: String,
+        @Indexed
         var companyName: String,
+        @Indexed
         var legalName: String,
         var businessAddress: BusinessAddress,
         var legalAddress: String,

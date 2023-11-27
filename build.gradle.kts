@@ -47,6 +47,7 @@ dependencies {
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2") // Use the latest version
 	implementation("org.springframework.boot:spring-boot-starter-aop")
 	implementation("org.springframework.retry:spring-retry")
+	testImplementation(kotlin("test"))
 }
 
 dependencyManagement {

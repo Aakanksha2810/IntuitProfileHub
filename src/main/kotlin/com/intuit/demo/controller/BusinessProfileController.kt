@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.http.MediaType
 
 @RestController
 @RequestMapping("/business-profile")
@@ -18,9 +19,13 @@ class BusinessProfileController(
 ) {
     private val log = LoggerFactory.getLogger(BusinessProfileService::class.java)
 
-    @PostMapping("/validation")
+    @PostMapping(
+        value = ["/validation"],
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     suspend fun validateBusinessProfile(
-        @RequestBody businessProfileRequest: BusinessProfile): ResponseEntity<Any> {
+        @RequestBody businessProfileRequest: BusinessProfile): ResponseEntity<ApiResponse<BusinessProfile>> {
         val validationResponse = businessProfileService.validateBusinessProfile(businessProfileRequest)
         val apiResponse = ApiResponse(
             path = "/business-profile/validation",

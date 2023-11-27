@@ -9,6 +9,5 @@ import org.springframework.web.bind.annotation.PostMapping
 @FeignClient(name = "validationClient", url = "\${validation.client.url}")
 interface ValidationClient {
     @PostMapping("/validateAPI")
-    @Retryable(maxAttempts = 3, backoff = Backoff(delay = 1000))
     fun callValidationApi(request: BusinessProfile): Boolean
 }

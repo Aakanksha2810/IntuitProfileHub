@@ -4,8 +4,8 @@ import org.springframework.http.HttpStatus
 import java.time.Instant
 
 data class ErrorResponse(
-    val status: HttpStatus,
+    val statusCode: Int,
     val error: String,
     val message: String,
-    val timestamp: Instant
+    val timestamp: Instant = Instant.now()
 )
