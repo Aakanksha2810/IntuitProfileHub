@@ -1,6 +1,5 @@
 package com.intuit.demo.model.response
 
-import org.springframework.http.HttpStatus
 import java.time.Instant
 
 data class ErrorResponse(

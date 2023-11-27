@@ -3,10 +3,6 @@ package com.intuit.demo.repository
 import com.intuit.demo.exception.DatabaseException
 import com.intuit.demo.model.schema.BusinessProfile
 import com.intuit.demo.service.BusinessProfileService
-import com.intuit.demo.util.RETRY_ATTEMPT
-import com.intuit.demo.util.RETRY_INITIAL_INTERVAL
-import com.intuit.demo.util.RETRY_MAX_NTERVAL
-import com.intuit.demo.util.RETRY_MULTIPLIER
 import com.mongodb.MongoException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,9 +15,6 @@ import org.springframework.data.mongodb.core.query.Update
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Recover
 import org.springframework.retry.annotation.Retryable
-import org.springframework.retry.backoff.ExponentialBackOffPolicy
-import org.springframework.retry.policy.SimpleRetryPolicy
-import org.springframework.retry.support.RetryTemplate
 import org.springframework.stereotype.Repository
 
 @Repository

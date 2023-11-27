@@ -1,8 +1,6 @@
 package com.intuit.demo.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.intuit.demo.client.ValidationClient
-import com.intuit.demo.client.ValidationCommand
 import com.intuit.demo.model.schema.BusinessProfile
 import com.intuit.demo.model.schema.BusinessAddress
 import com.intuit.demo.model.schema.TaxIdentifiers
@@ -23,7 +21,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import java.util.*
 
 
 @SpringBootTest
