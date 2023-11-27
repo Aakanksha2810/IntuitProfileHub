@@ -3,7 +3,6 @@ package com.intuit.demo.controller
 import com.intuit.demo.model.response.ApiResponse
 import com.intuit.demo.model.schema.BusinessProfile
 import com.intuit.demo.service.BusinessProfileService
-import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.PostMapping
@@ -17,7 +16,6 @@ import org.springframework.http.MediaType
 class BusinessProfileController(
     private val businessProfileService: BusinessProfileService
 ) {
-    private val log = LoggerFactory.getLogger(BusinessProfileService::class.java)
 
     @PostMapping(
         value = ["/validation"],
