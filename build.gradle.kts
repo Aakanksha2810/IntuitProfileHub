@@ -33,6 +33,7 @@ dependencies {
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+	implementation("org.objectfabric:objectfabric-cachebuilder:0.9.1")
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -47,6 +48,8 @@ dependencies {
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2") // Use the latest version
 	implementation("org.springframework.boot:spring-boot-starter-aop")
 	implementation("org.springframework.retry:spring-retry")
+	testImplementation(kotlin("test"))
+	implementation("org.springframework.boot:spring-boot-starter-validation")
 }
 
 dependencyManagement {
