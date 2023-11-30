@@ -11,9 +11,7 @@ data class BusinessProfile(
         @Id
         @field:Email(message = "Invalid email format")
         val email: String,
-        @Indexed
         var companyName: String,
-        @Indexed
         var legalName: String,
         var businessAddress: BusinessAddress,
         var legalAddress: String,
